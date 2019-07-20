@@ -4,12 +4,13 @@ services:
     build: ./webapp
     volumes:
       - ./webapp:/var/www/
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     ports:
       - "3031:3031"
     environment:
       TZ: "Asia/Tokyo"
     depends_on:
-      - redis
+      - executer
   
   nginx:
     image: nginx
@@ -23,6 +24,8 @@ services:
     environment:
       TZ: "Asia/Tokyo"
     command: nginx -c /etc/nginx/nginx.conf
-  
-  redis:
-    image: redis
+
+  executer:
+    # only for build
+    build: ./executer
+    command: echo "shellgei executer already initialized"

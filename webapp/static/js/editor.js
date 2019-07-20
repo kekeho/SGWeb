@@ -18,15 +18,28 @@ require(['vs/editor/editor.main'], function() {
 
 
 function post_shell_code(value) {
+    let stdout = document.getElementById('exec-stdout');
+    let stderr = document.getElementById('exec-stderr');
+    let system_msg = document.getElementById('system-message');
+
+    system_msg.innerText = '[System message]: executing...';
+    let system_msg_clean_flag = false;
+
     axios.post('/post_code', {
         code: value
     })
     .then(function(response) {
-        console.log('Sent: ' + response.data);
+        stdout.innerText = response.data.stdout;
+        stderr.innerText = response.data.stderr;
     })
     .catch(function(error) {
-        console.log(error);
+        system_msg.innerText = error;
+        system_msg_clean_flag = true;
     });
+
+    if (!system_msg_clean_flag) {
+        system_msg.innerText = '';
+    }
 }
 
 

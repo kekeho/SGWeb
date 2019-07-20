@@ -1,0 +1,1 @@
+FROM theoldmoon0602/shellgeibot

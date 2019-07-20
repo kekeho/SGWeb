@@ -42,3 +42,7 @@ body {
     align-items: center;
     margin: 1rem;
 }
+
+pre {
+    color: #eaeaea !important;
+}
