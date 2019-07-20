@@ -1,0 +1,28 @@
+version: "3"
+services:
+  webapp:
+    build: ./webapp
+    volumes:
+      - ./webapp:/var/www/
+    ports:
+      - "3031:3031"
+    environment:
+      TZ: "Asia/Tokyo"
+    depends_on:
+      - redis
+  
+  nginx:
+    image: nginx
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - /tmp/nginx_log:/var/log/nginx  # Output log to host
+    links:
+      - webapp
+    ports:
+      - "80:80"
+    environment:
+      TZ: "Asia/Tokyo"
+    command: nginx -c /etc/nginx/nginx.conf
+  
+  redis:
+    image: redis
