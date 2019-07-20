@@ -13,4 +13,24 @@
 
 body {
     background-color: rgb(0, 0, 10) !important;
+    color: #eaeaea !important;
+}
+
+.editor-result-grid {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+.run_button {
+    border: #eaeaea;
+    border-width: 1px;
+    border-style: solid;
+    text-align: center;
+    margin: 0;
+}
+
+.window-header {
+    display: flex;
+    align-items: center;
+    margin: 1rem;
 }
