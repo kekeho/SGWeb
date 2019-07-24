@@ -17,13 +17,21 @@ require(['vs/editor/editor.main'], function() {
 });
 
 
+function clean_msg(msg_elements) {
+    msg_elements.forEach(e => {
+        e.innerText = '';
+    });
+}
+
+
 function post_shell_code(value) {
     let stdout = document.getElementById('exec-stdout');
     let stderr = document.getElementById('exec-stderr');
     let system_msg = document.getElementById('system-message');
 
+    clean_msg([stdout, stderr, system_msg]);
+
     system_msg.innerText = '[System message]: executing...';
-    let system_msg_clean_flag = false;
 
     axios.post('/post_code', {
         code: value
@@ -31,15 +39,11 @@ function post_shell_code(value) {
     .then(function(response) {
         stdout.innerText = response.data.stdout;
         stderr.innerText = response.data.stderr;
+        system_msg.innerText = response.data.sysmsg;
     })
     .catch(function(error) {
         system_msg.innerText = error;
-        system_msg_clean_flag = true;
     });
-
-    if (!system_msg_clean_flag) {
-        system_msg.innerText = '';
-    }
 }
 
 

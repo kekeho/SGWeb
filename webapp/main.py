@@ -6,7 +6,7 @@
 
 from flask import Flask, render_template, request
 import uuid
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, TimeoutExpired
 import json
 import os
 
@@ -35,10 +35,14 @@ def post_code():
     ]
     
     p = Popen(docker_command, stdout=PIPE, stderr=PIPE, stdin=PIPE)
-    stdout, stderr = map(lambda x: x.decode(), p.communicate(input=code.encode()))
+    try:
+        stdout, stderr = map(lambda x: x.decode(), p.communicate(input=code.encode(), timeout=10.0))
+        sysmsg = ''
+    except TimeoutExpired:
+        stdout, stderr, sysmsg = ('', '', '[Error]: Timeout (over 10s)')
     p.kill()
 
-    return json.dumps({'stdout': stdout, 'stderr': stderr})
+    return json.dumps({'stdout': stdout, 'stderr': stderr, 'sysmsg': sysmsg})
 
 
 if __name__ == "__main__":
