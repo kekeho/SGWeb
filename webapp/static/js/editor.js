@@ -24,12 +24,28 @@ function clean_msg(msg_elements) {
 }
 
 
+function images_insert(images_list) {
+    let image_row = document.getElementById('image_row');
+    images_list.forEach(b64image => {
+        let img = document.createElement('img');
+        img.setAttribute('src', 'data:image/png;base64,' + b64image);
+
+        let col = document.createElement('div');
+        col.classList.add('col-3');
+        col.appendChild(img);
+
+        image_row.appendChild(col);
+    });
+}
+
+
 function post_shell_code(value) {
     let stdout = document.getElementById('exec-stdout');
     let stderr = document.getElementById('exec-stderr');
     let system_msg = document.getElementById('system-message');
+    let image_row = document.getElementById('image_row');
 
-    clean_msg([stdout, stderr, system_msg]);
+    clean_msg([stdout, stderr, system_msg, image_row]);
 
     system_msg.innerText = '[System message]: executing...';
 
@@ -40,6 +56,7 @@ function post_shell_code(value) {
         stdout.innerText = response.data.stdout;
         stderr.innerText = response.data.stderr;
         system_msg.innerText = response.data.sysmsg;
+        images_insert(response.data.images);
     })
     .catch(function(error) {
         system_msg.innerText = error;

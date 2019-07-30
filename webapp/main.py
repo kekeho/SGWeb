@@ -22,8 +22,6 @@ def index():
 
 @app.route('/post_code/', methods=['POST'])
 def post_code():
-    code = request.json['code']
-
     docker_command = [
         'docker', 'run',
         '-i',
@@ -33,16 +31,21 @@ def post_code():
         '--pids-limit=1024',
         'sgweb_executer',
     ]
-    
+
     p = Popen(docker_command, stdout=PIPE, stderr=PIPE, stdin=PIPE)
     try:
-        stdout, stderr = map(lambda x: x.decode(), p.communicate(input=code.encode(), timeout=10.0))
-        sysmsg = ''
+        code = request.json['code']
+        resp_json, sysmsg = map(lambda x: x.decode(), p.communicate(input=code.encode(), timeout=10.0))
+        print('json', resp_json)
+        print('sysmessage', sysmsg)
+        resp = json.loads(resp_json)
+        stdout = resp['stdout']
+        stderr = resp['stderr']
     except TimeoutExpired:
         stdout, stderr, sysmsg = ('', '', '[Error]: Timeout (over 10s)')
     p.kill()
 
-    return json.dumps({'stdout': stdout, 'stderr': stderr, 'sysmsg': sysmsg})
+    return json.dumps({'stdout': stdout, 'stderr': stderr, 'sysmsg': sysmsg, 'images': resp['images']})
 
 
 if __name__ == "__main__":

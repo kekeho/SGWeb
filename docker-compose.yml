@@ -29,3 +29,7 @@ services:
     # only for build
     build: ./executer
     command: echo "shellgei executer already initialized"
+
+volumes:
+  images_tmp:
+    driver: local
