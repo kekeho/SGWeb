@@ -36,7 +36,6 @@ def post_code():
     try:
         code = request.json['code']
         resp_json, sysmsg = map(lambda x: x.decode(), p.communicate(input=code.encode(), timeout=10.0))
-        print('json', resp_json)
         print('sysmessage', sysmsg)
         resp = json.loads(resp_json)
         stdout = resp['stdout']
