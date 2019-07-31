@@ -19,8 +19,6 @@ services:
       - /tmp/nginx_log:/var/log/nginx  # Output log to host
     links:
       - webapp
-    ports:
-      - "80:80"
     environment:
       TZ: "Asia/Tokyo"
     command: nginx -c /etc/nginx/nginx.conf
@@ -30,11 +28,20 @@ services:
     build: ./executer
     command: echo "shellgei executer already initialized"
 
+  https-portal:
+    image: steveltn/https-portal:1
+    ports:
+      - "80:80"
+      - "443:443"
+    links:
+      - nginx
+    environment:
+      STAGE: local
+      #STAGE: production
+      DOMAINS: 'localhost -> http://nginx:80'
+      #DOMAINS: 'shellgei-web.net -> http://nginx:80'
+
 volumes:
   images_tmp:
     driver: local
 
-https-portal:
-  environment:
-    STAGE: local
-    DOMAINS: 'http://www.shellgei-web.net'
