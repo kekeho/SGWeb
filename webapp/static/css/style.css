@@ -46,3 +46,7 @@ body {
 pre {
     color: #eaeaea !important;
 }
+
+.footer-col {
+    text-align: center;
+}
