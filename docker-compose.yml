@@ -33,3 +33,8 @@ services:
 volumes:
   images_tmp:
     driver: local
+
+https-portal:
+  environment:
+    STAGE: local
+    DOMAINS: 'http://www.shellgei-web.net'
