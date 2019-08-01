@@ -1,5 +1,5 @@
 # Copyright (c) 2019 Hiroki Takemura (kekeho)
-# 
+#
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
 
@@ -41,6 +41,9 @@ def post_code():
         stdout = resp['stdout']
         stderr = resp['stderr']
         images = resp['images']
+    except json.JSONDecodeError:
+        stdout, stderr, sysmsg = ('', '', '')
+        images = []
     except TimeoutExpired:
         stdout, stderr, sysmsg = ('', '', '[Error]: Timeout (over 10s)')
         images = []
