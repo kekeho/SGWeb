@@ -1,5 +1,5 @@
 // Copyright (c) 2019 Hiroki Takemura (kekeho)
-// 
+//
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
@@ -63,9 +63,62 @@ function post_shell_code(value) {
     });
 }
 
+const MAX_SAVE_ATTEMPTS = 10;
+
+function add_recent_attempt(attempt) {
+    let attempts = localStorage.getItem("attempts");
+    if (attempts === null) {
+        attempts = [attempt];
+    }
+    else {
+        attempts = JSON.parse(attempts);
+        attempts.unshift(attempt);
+        while (attempts.length >= MAX_SAVE_ATTEMPTS) {
+            attempts.pop();
+        }
+    }
+    localStorage.setItem("attempts", JSON.stringify(attempts));
+}
+
+function update_attempts() {
+    // remove all attempt dom elements
+    let recents = document.getElementById("recents");
+    while (recents.firstChild) {
+        recents.removeChild(recents.firstChild);
+    }
+
+    // get recent attempts
+    let attempts = localStorage.getItem("attempts");
+    if (attempts === null) {
+        attempts = [];
+    }
+    else {
+        attempts = JSON.parse(attempts);
+    }
+
+    // add attempts
+    for (let attempt of attempts) {
+        let li = document.createElement("li");
+
+        li.innerText = attempt;
+        li.classList.add("recent");
+        li.addEventListener("click", function(e) {
+            editor.setValue(e.target.innerText);
+        })
+        recents.appendChild(li);
+    }
+}
+
+document.getElementById("rm_button").addEventListener("click", function() {
+    localStorage.removeItem("attempts");
+    update_attempts();
+});
+
 
 var run_button = document.getElementById('run_button');
 run_button.onclick = function() {
     let value = editor.getValue();
     post_shell_code(value);
+    add_recent_attempt(value);
+    update_attempts();
 };
