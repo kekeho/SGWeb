@@ -40,8 +40,3 @@ services:
       #STAGE: production
       DOMAINS: 'localhost -> http://nginx:80'
       #DOMAINS: 'shellgei-web.net -> http://nginx:80, www.shellgei-web.net -> http://nginx:80'
-
-volumes:
-  images_tmp:
-    driver: local
-
