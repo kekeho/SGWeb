@@ -40,11 +40,13 @@ def post_code():
         resp = json.loads(resp_json)
         stdout = resp['stdout']
         stderr = resp['stderr']
+        images = resp['images']
     except TimeoutExpired:
         stdout, stderr, sysmsg = ('', '', '[Error]: Timeout (over 10s)')
+        images = []
     p.kill()
 
-    return json.dumps({'stdout': stdout, 'stderr': stderr, 'sysmsg': sysmsg, 'images': resp['images']})
+    return json.dumps({'stdout': stdout, 'stderr': stderr, 'sysmsg': sysmsg, 'images': images})
 
 
 if __name__ == "__main__":
