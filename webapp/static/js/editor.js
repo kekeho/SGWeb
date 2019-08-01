@@ -1,5 +1,5 @@
 // Copyright (c) 2019 Hiroki Takemura (kekeho)
-// 
+//
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
@@ -68,4 +68,10 @@ var run_button = document.getElementById('run_button');
 run_button.onclick = function() {
     let value = editor.getValue();
     post_shell_code(value);
+};
+
+var tweet_button = document.getElementById('tweet_button');
+tweet_button.onclick = function() {
+    let value = editor.getValue();
+    window.open("https://twitter.com/intent/tweet?text="+ encodeURI(editor.getValue()) + "&hashtags=" + encodeURI("シェル芸"))
 };
