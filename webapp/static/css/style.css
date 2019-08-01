@@ -50,3 +50,7 @@ pre {
 .footer-col {
     text-align: center;
 }
+
+#image_row img {
+    width: 100%;
+}
