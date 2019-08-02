@@ -1,5 +1,5 @@
 # Copyright (c) 2019 Hiroki Takemura (kekeho)
-# 
+#
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
 
@@ -35,14 +35,17 @@ def post_code():
     p = Popen(docker_command, stdout=PIPE, stderr=PIPE, stdin=PIPE)
     try:
         code = request.json['code']
-        resp_json, sysmsg = map(lambda x: x.decode(), p.communicate(input=code.encode(), timeout=10.0))
+        resp_json, sysmsg = map(lambda x: x.decode(), p.communicate(input=code.encode(), timeout=20.0))
         print('sysmessage', sysmsg)
         resp = json.loads(resp_json)
         stdout = resp['stdout']
         stderr = resp['stderr']
         images = resp['images']
+    except json.JSONDecodeError:
+        stdout, stderr, sysmsg = ('', '', '')
+        images = []
     except TimeoutExpired:
-        stdout, stderr, sysmsg = ('', '', '[Error]: Timeout (over 10s)')
+        stdout, stderr, sysmsg = ('', '', '[Error]: Timeout (over 20s)')
         images = []
     p.kill()
 

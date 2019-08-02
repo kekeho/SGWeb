@@ -36,6 +36,14 @@ body {
     text-align: center;
     margin: 0;
 }
+.run_button:hover {
+    cursor: pointer;
+}
+.run_button:active {
+    cursor: pointer;
+    position: relative;
+    top: 2px;
+}
 
 .window-header {
     display: flex;

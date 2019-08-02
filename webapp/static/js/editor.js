@@ -122,3 +122,9 @@ run_button.onclick = function() {
     add_recent_attempt(value);
     update_attempts();
 };
+
+var tweet_button = document.getElementById('tweet_button');
+tweet_button.onclick = function() {
+    let value = editor.getValue();
+    window.open("https://twitter.com/intent/tweet?text="+ encodeURI(editor.getValue()) + "&hashtags=" + encodeURI("シェル芸"))
+};

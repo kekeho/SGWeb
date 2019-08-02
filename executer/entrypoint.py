@@ -1,10 +1,11 @@
 import os
 import subprocess
+import sys
 import glob
 import base64
 import json
 
-with open(0) as f:
+with sys.stdin as f:
     code = f.read()
 
 if code == '':
