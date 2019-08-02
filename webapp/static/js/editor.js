@@ -73,5 +73,5 @@ run_button.onclick = function() {
 var tweet_button = document.getElementById('tweet_button');
 tweet_button.onclick = function() {
     let value = editor.getValue();
-    window.open("https://twitter.com/intent/tweet?text="+ encodeURI(editor.getValue()) + "&hashtags=" + encodeURI("シェル芸"))
+    window.open("https://twitter.com/intent/tweet?text="+ encodeURIComponent(editor.getValue()) + "&hashtags=" + encodeURIComponent("シェル芸"))
 };
