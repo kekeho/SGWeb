@@ -31,7 +31,7 @@ function images_insert(images_list) {
         img.setAttribute('src', 'data:image/*;base64,' + b64image);
 
         let col = document.createElement('div');
-        col.classList.add('col-3');
+        col.classList.add('col-6');
         col.appendChild(img);
 
         image_row.appendChild(col);
