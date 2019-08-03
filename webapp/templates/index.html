@@ -31,7 +31,7 @@
             </div>
         </div>
 
-        <div class="col-md-6 editor-result-grid">  <!-- RESULT -->
+        <div class="col-md-3 editor-result-grid">  <!-- RESULT -->
             <div class="row window-header">  <!-- header -->
                 <div class="col-12">
                     <h3>Result</h3>
@@ -48,6 +48,21 @@
                     <p>[system message]</p>
                     <pre id="system-message"></pre>
                 </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 editor-result-grid">  <!-- RECENT SHELLGEIS -->
+            <div class="row window-header">  <!-- header -->
+                <div class="col-12">
+                    <h3>Recent attempts</h3>
+                </div>
+            </div>
+            <div class="row">
+                <a href="#" id="rm_button">clear</a>
+            </div>
+            <div class="row">  <!-- content -->
+                <ul class="col-12" id="recents">
+                </ul>
             </div>
         </div>
     </div>
@@ -72,4 +87,9 @@
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.17.1/min/vs/loader.js"></script>
 <script src="/static/js/editor.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        update_attempts();
+    });
+</script>
 {% endblock %}
