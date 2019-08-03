@@ -28,7 +28,7 @@ function images_insert(images_list) {
     let image_row = document.getElementById('image_row');
     images_list.forEach(b64image => {
         let img = document.createElement('img');
-        img.setAttribute('src', 'data:image/png;base64,' + b64image);
+        img.setAttribute('src', 'data:image/*;base64,' + b64image);
 
         let col = document.createElement('div');
         col.classList.add('col-3');
