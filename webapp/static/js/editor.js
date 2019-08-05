@@ -14,6 +14,9 @@ require(['vs/editor/editor.main'], function() {
         theme: 'vs-dark',
         minimap: { enabled: false }
     });
+
+    // Set newline sequence as LF (not CRLF)
+    editor.model.setEOL(monaco.editor.EndOfLineSequence.LF);
 });
 
 
