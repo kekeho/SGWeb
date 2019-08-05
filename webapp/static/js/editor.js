@@ -49,7 +49,7 @@ function post_shell_code(value) {
 
     system_msg.innerText = '[System message]: executing...';
 
-    axios.post('/post_code', {
+    axios.post('/post_code/', {
         code: value
     })
     .then(function(response) {
