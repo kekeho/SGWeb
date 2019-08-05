@@ -4,19 +4,22 @@
 // https://opensource.org/licenses/MIT
 
 // monaco editor
-var editor = null;
+let editor = null;
 require.config({
     paths: {'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.17.1/min/vs'}
 });
+
 require(['vs/editor/editor.main'], function() {
+    // Set newline sequence as LF (not CRLF)
+    let model = monaco.editor.createModel("hogehgoe","plaintext");
+    model.setEOL(monaco.editor.EndOfLineSequence.LF);
+
     editor = monaco.editor.create(document.getElementById('editor'), {
         language: 'shell',
         theme: 'vs-dark',
-        minimap: { enabled: false }
+        minimap: { enabled: false },
+        model: model
     });
-
-    // Set newline sequence as LF (not CRLF)
-    editor.model.setEOL(monaco.editor.EndOfLineSequence.LF);
 });
 
 
