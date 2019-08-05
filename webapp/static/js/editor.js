@@ -11,7 +11,7 @@ require.config({
 
 require(['vs/editor/editor.main'], function() {
     // Set newline sequence as LF (not CRLF)
-    let model = monaco.editor.createModel("hogehgoe","plaintext");
+    let model = monaco.editor.createModel("","shell");
     model.setEOL(monaco.editor.EndOfLineSequence.LF);
 
     editor = monaco.editor.create(document.getElementById('editor'), {
