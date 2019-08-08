@@ -31,7 +31,7 @@ fi
 if [ "$MODE" = "pipe" ];then
 	code="\"echo $(base64 -w0)|base64 -d|$1\""
 else
-	code="$(cat "$FILE"|jq -Rs)"
+	code="$(cat "$FILE"|jq -Rs .)"
 fi
 
 data=$(
