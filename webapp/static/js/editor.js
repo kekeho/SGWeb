@@ -20,6 +20,17 @@ require(['vs/editor/editor.main'], function() {
         minimap: { enabled: false },
         model: model
     });
+
+	editor.addAction({
+	  id: "ExecuteShellgei",
+	  label: "Execute your Shellgei",
+	  keybindings: [
+		monaco.KeyMod.Shift | monaco.KeyCode.Enter,
+	  ],
+	  run: function(){
+		run_button.click();
+	  }
+	})
 });
 
 
