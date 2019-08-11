@@ -3,12 +3,14 @@
 URL="https://shellgei-web.net/post_code/"
 FILE="-"
 MODE="default"
+code=""
 
 help(){
-	echo "Usage: $0 [OPTION] [FILE]"
+	echo "Usage: $0 [OPTION] [FILE|COMMAND]"
 	echo "With no FILE, or when FILE is -, read standard input."
 	echo "  -r : print raw response"
 	echo "  -f : print responce in readable format"
+	echo "  -p : read standard input and pass it to the standard input of COMMAND on the SGWeb"
 	echo "  -h : display this help and exit"
 }
 
@@ -16,6 +18,7 @@ if [ $# -ge 1 ]&&[ $1 != "-" ]&&[ ${1:0:1} = "-" ];then
 	case $1 in
 		"-r") MODE="raw";;
 		"-f") MODE="format";;
+		"-p") MODE="pipe";;
 		"-h") help;exit 0;;
 	esac
 	shift
@@ -25,6 +28,12 @@ if [ $# -ge 1 ];then
 	FILE="$1"
 fi
 
+if [ "$MODE" = "pipe" ];then
+	code="\"echo $(base64 -w0)|base64 -d|$1\""
+else
+	code="$(cat "$FILE"|jq -Rs .)"
+fi
+
 data=$(
 curl \
 	-sS \
@@ -32,7 +41,7 @@ curl \
 	-H 'Content-Type: application/json;charset=UTF-8' \
 	-H 'Accept-Encoding: gzip' \
 	-H 'Accept: application/json, text/plain, */*' \
-	-d '{"code":'"$(cat "$FILE"|jq -Rs)"'}' \
+	-d '{"code":'"$code"'}' \
 	"$URL"|gzip -d
 )
 
@@ -41,10 +50,12 @@ if [ "$MODE" = "raw" ];then
 	exit 0
 fi
 
-case $MODE in
-	"default")
-		echo -n "$(jq -r .stdout <<<"$data")"
-		jq -r .sysmsg <<<"$data" >&2
+sysmsg="$(jq -r .sysmsg <<<"$data")"
+
+case "$MODE" in
+	"default" | "pipe")
+		jq -r .stdout <<<"$data"|head -c -1
+		[ "$sysmsg" ]&&echo "$sysmsg" >&2
 		;;
 	"format")
 		echo "[stdout]"
