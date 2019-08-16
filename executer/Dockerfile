@@ -1,4 +1,4 @@
-FROM theoldmoon0602/shellgeibot
+FROM theoldmoon0602/shellgeibot:latest
 
 RUN mkdir /images
 
