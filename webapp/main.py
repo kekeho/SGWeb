@@ -6,7 +6,8 @@
 
 from flask import Flask, render_template, request
 import uuid
-from subprocess import Popen, PIPE, TimeoutExpired
+from subprocess import Popen, PIPE, TimeoutExpired, run
+import requests
 import json
 import os
 
@@ -50,6 +51,28 @@ def post_code():
     p.kill()
 
     return json.dumps({'stdout': stdout, 'stderr': stderr, 'sysmsg': sysmsg, 'images': images})
+
+
+@app.route('/dockerhub_webhook/', methods=["POST"])
+def build_executer():
+    """When get webhook from dockerhub, build executer container"""
+    repo_name = request.json['repository']['repo_name']
+    tag = request.json['push_data']['tag']
+
+    if not (repo_name == 'theoldmoon0602/shellgeibot' and tag == 'latest'):
+        return
+    
+    # validate webhook callback
+    callback_url = request.json['callback_url']
+    validate_result = requests.post(callback_url, json=request.json)
+
+    if validate_result.json['status'] != 'success':
+        return
+
+    # build executer container
+    run(['docker', 'pull', repo_name])  # pull kernel image
+    compose_filename = os.path.abspath(os.path.join(os.path.dirname(__file__), '../'))
+    run(['docker-compose', '-f', compose_filename, 'build', 'executer'])
 
 
 if __name__ == "__main__":
