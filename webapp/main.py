@@ -66,7 +66,7 @@ def build_executer():
     callback_url = request.json['callback_url']
     validate_result = requests.post(callback_url, json=request.json)
 
-    if validate_result.json['status'] != 'success':
+    if validate_result.json()['status'] != 'success':
         return
 
     # build executer container
