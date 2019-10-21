@@ -53,7 +53,6 @@ body {
 
 pre {
     color: #eaeaea !important;
-    white-space: pre-wrap;
 }
 
 .footer-col {
@@ -62,6 +61,12 @@ pre {
 
 #image_row img {
     width: 100%;
+}
+#image_row .col {
+    min-width:50%;
+}
+#image_row .col:nth-child(n+2) {
+    max-width:50%;
 }
 
 #recents {
