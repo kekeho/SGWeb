@@ -29,6 +29,16 @@ body {
     padding-bottom: 2rem;
 }
 
+#editor {
+  height: 500px
+}
+
+@media screen and (max-width:768px) {
+  #editor {
+    height: 100px
+  }
+}
+
 .run_button {
     border: #eaeaea;
     border-width: 1px;
