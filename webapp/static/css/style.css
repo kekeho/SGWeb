@@ -30,12 +30,12 @@ body {
 }
 
 #editor {
-  height: 500px
+  height: 500px;
 }
 
 @media screen and (max-width:768px) {
   #editor {
-    height: 100px
+    height: 100px;
   }
 }
 
