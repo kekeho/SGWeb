@@ -18,6 +18,7 @@ require(['vs/editor/editor.main'], function() {
         language: 'shell',
         theme: 'vs-dark',
         minimap: { enabled: false },
+        automaticLayout : true,
         model: model
     });
 
