@@ -63,6 +63,12 @@ pre {
 #image_row img {
     width: 100%;
 }
+#image_row .col {
+    min-width:50%;
+}
+#image_row .col:nth-child(n+2) {
+    max-width:50%;
+}
 
 #recents {
     list-style: none;
