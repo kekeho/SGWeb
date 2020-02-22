@@ -1,16 +1,19 @@
 version: "3"
 services:
-  webapp:
-    build: ./webapp
+  server:
+    build: ./server
     volumes:
-      - ./webapp:/var/www/
+      - ./server:/var/www/
       - /var/run/docker.sock:/var/run/docker.sock:ro
     ports:
       - "3031:3031"
     environment:
-      TZ: "Asia/Tokyo"
+      DB_PASSWORD: ${DB_PASSWORD}
+      TZ: "UTC"
+
     depends_on:
-      - executer
+      - postgres
+    #   - executer
   
   nginx:
     image: nginx
@@ -18,15 +21,15 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf
       - /tmp/nginx_log:/var/log/nginx  # Output log to host
     links:
-      - webapp
+      - server
     environment:
-      TZ: "Asia/Tokyo"
+      TZ: "UTC"
     command: nginx -c /etc/nginx/nginx.conf
 
-  executer:
-    # only for build
-    build: ./executer
-    command: echo "shellgei executer already initialized"
+  # executer:
+  #   # only for build
+  #   build: ./executer
+  #   command: echo "shellgei executer already initialized"
 
   https-portal:
     image: steveltn/https-portal:1
@@ -40,3 +43,17 @@ services:
       #STAGE: production
       DOMAINS: 'localhost -> http://nginx:80'
       #DOMAINS: 'shellgei-web.net -> http://nginx:80, www.shellgei-web.net -> http://nginx:80'
+
+  
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_USER: "sgweb"
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - "pgdata:/var/lib/postgresql/data"
+
+
+volumes:
+  pgdata:
+    driver: "local"
