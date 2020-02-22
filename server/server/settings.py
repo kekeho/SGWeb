@@ -26,7 +26,7 @@ SECRET_KEY = 'cad+(t#)@gdrq*78hs+ow8f$tlh$gas!d&#e!@f^j-0)zo*3v2'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition

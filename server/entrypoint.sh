@@ -1,4 +1,4 @@
 python3 manage.py makemigrations
 python3 manage.py migrate
 
-python3 manage.py runserver 0.0.0.0:3031
+uwsgi --socket :3031 --module server.wsgi

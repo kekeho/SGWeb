@@ -2,3 +2,4 @@ env/
 .vscode/
 *.pyc
 db.sqlite3
+user/migrations
