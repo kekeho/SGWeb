@@ -2,12 +2,11 @@ module Main exposing (main)
 
 import Browser
 import Browser.Navigation as Nav
-import Data exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Url
 import Url.Parser exposing ((</>))
-import User exposing (login, loginView, userView)
+import User
 
 
 
@@ -30,11 +29,31 @@ main =
 -- MODEL
 
 
+type Route
+    = IndexPage
+    | UserPage String
+    | LoginPage
+
+
+type Msg
+    = LinkClicked Browser.UrlRequest
+    | UrlChanged Url.Url
+    | UserMessage User.UserMsg
+
+
+type alias Model =
+    { key : Nav.Key
+    , url : Url.Url
+    , user : User.UserModel
+    , route : Route
+    }
+
+
 init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url key =
     ( { key = key
       , url = url
-      , route = Data.IndexPage
+      , route = IndexPage
       , user =
             { token = Nothing
             , login = { userName = "", password = "", error = Nothing }
@@ -64,82 +83,14 @@ update msg model =
             , Cmd.none
             )
 
-        LoginInputUsername username ->
+        UserMessage userMsg ->
             let
-                user_ =
-                    model.user
-
-                login_ =
-                    model.user.login
-
-                nextLogin =
-                    { login_ | userName = username }
-
-                nextUser =
-                    { user_ | login = nextLogin }
+                ( model_, cmd_ ) =
+                    User.update userMsg model.user model.key
             in
-            ( { model | user = nextUser }
-            , Cmd.none
+            ( { model | user = model_ }
+            , Cmd.map UserMessage cmd_
             )
-
-        LoginInputPassword password ->
-            let
-                user_ =
-                    model.user
-
-                login_ =
-                    model.user.login
-
-                nextLogin =
-                    { login_ | password = password }
-
-                nextUser =
-                    { user_ | login = nextLogin }
-            in
-            ( { model | user = nextUser }
-            , Cmd.none
-            )
-
-        LoginSubmit ->
-            ( model, login model.user.login )
-
-        GotJwtToken result ->
-            case result of
-                Ok token ->
-                    let
-                        user_ =
-                            model.user
-
-                        login_ =
-                            model.user.login
-
-                        clearedLogin =
-                            { login_ | userName = "", password = "", error = Nothing }
-
-                        newUser =
-                            { user_ | token = Just token, login = clearedLogin }
-                    in
-                    ( { model | user = newUser }
-                    , Nav.pushUrl model.key "/"
-                    )
-
-                Err error ->
-                    let
-                        user_ =
-                            model.user
-
-                        login_ =
-                            model.user.login
-
-                        nextLogin =
-                            { login_ | error = Just error }
-
-                        nextUser =
-                            { user_ | login = nextLogin }
-                    in
-                    ( { model | user = nextUser }
-                    , Cmd.none
-                    )
 
 
 
@@ -149,19 +100,19 @@ update msg model =
 view : Model -> Browser.Document Msg
 view model =
     case Url.Parser.parse routeParser model.url of
-        Just (Data.UserPage user) ->
+        Just (UserPage user) ->
             { title = "Users"
             , body =
-                [ userView model ]
+                [ User.userView model.user |> Html.map UserMessage ]
             }
 
-        Just Data.LoginPage ->
+        Just LoginPage ->
             { title = "login"
             , body =
-                [ loginView model ]
+                [ User.loginView model.user |> Html.map UserMessage ]
             }
 
-        Just Data.IndexPage ->
+        Just IndexPage ->
             { title = "URL Interceptor"
             , body =
                 [ text "The Current URL is: "
@@ -191,10 +142,10 @@ subscriptions model =
 -- FUNCTIONS
 
 
-routeParser : Url.Parser.Parser (Data.Route -> a) a
+routeParser : Url.Parser.Parser (Route -> a) a
 routeParser =
     Url.Parser.oneOf
-        [ Url.Parser.map Data.IndexPage Url.Parser.top
-        , Url.Parser.map Data.UserPage (Url.Parser.s "user" </> Url.Parser.string)
-        , Url.Parser.map Data.LoginPage (Url.Parser.s "login")
+        [ Url.Parser.map IndexPage Url.Parser.top
+        , Url.Parser.map UserPage (Url.Parser.s "user" </> Url.Parser.string)
+        , Url.Parser.map LoginPage (Url.Parser.s "login")
         ]

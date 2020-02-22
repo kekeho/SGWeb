@@ -5144,10 +5144,10 @@ function _Url_percentDecode(string)
 	{
 		return $elm$core$Maybe$Nothing;
 	}
-}var $author$project$Data$LinkClicked = function (a) {
+}var $author$project$Main$LinkClicked = function (a) {
 	return {$: 'LinkClicked', a: a};
 };
-var $author$project$Data$UrlChanged = function (a) {
+var $author$project$Main$UrlChanged = function (a) {
 	return {$: 'UrlChanged', a: a};
 };
 var $elm$core$Basics$EQ = {$: 'EQ'};
@@ -10748,13 +10748,13 @@ var $elm$core$Basics$never = function (_v0) {
 	}
 };
 var $elm$browser$Browser$application = _Browser_application;
-var $author$project$Data$IndexPage = {$: 'IndexPage'};
+var $author$project$Main$IndexPage = {$: 'IndexPage'};
 var $author$project$Main$init = F3(
 	function (flags, url, key) {
 		return _Utils_Tuple2(
 			{
 				key: key,
-				route: $author$project$Data$IndexPage,
+				route: $author$project$Main$IndexPage,
 				url: url,
 				user: {
 					login: {error: $elm$core$Maybe$Nothing, password: '', userName: ''},
@@ -10768,8 +10768,56 @@ var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$Main$subscriptions = function (model) {
 	return $elm$core$Platform$Sub$none;
 };
+var $author$project$Main$UserMessage = function (a) {
+	return {$: 'UserMessage', a: a};
+};
 var $elm$browser$Browser$Navigation$load = _Browser_load;
-var $author$project$Data$GotJwtToken = function (a) {
+var $elm$browser$Browser$Navigation$pushUrl = _Browser_pushUrl;
+var $elm$url$Url$addPort = F2(
+	function (maybePort, starter) {
+		if (maybePort.$ === 'Nothing') {
+			return starter;
+		} else {
+			var port_ = maybePort.a;
+			return starter + (':' + $elm$core$String$fromInt(port_));
+		}
+	});
+var $elm$url$Url$addPrefixed = F3(
+	function (prefix, maybeSegment, starter) {
+		if (maybeSegment.$ === 'Nothing') {
+			return starter;
+		} else {
+			var segment = maybeSegment.a;
+			return _Utils_ap(
+				starter,
+				_Utils_ap(prefix, segment));
+		}
+	});
+var $elm$url$Url$toString = function (url) {
+	var http = function () {
+		var _v0 = url.protocol;
+		if (_v0.$ === 'Http') {
+			return 'http://';
+		} else {
+			return 'https://';
+		}
+	}();
+	return A3(
+		$elm$url$Url$addPrefixed,
+		'#',
+		url.fragment,
+		A3(
+			$elm$url$Url$addPrefixed,
+			'?',
+			url.query,
+			_Utils_ap(
+				A2(
+					$elm$url$Url$addPort,
+					url.port_,
+					_Utils_ap(http, url.host)),
+				url.path)));
+};
+var $author$project$User$GotJwtToken = function (a) {
 	return {$: 'GotJwtToken', a: a};
 };
 var $elm$http$Http$BadStatus_ = F2(
@@ -11040,55 +11088,68 @@ var $author$project$User$login = function (info) {
 	return $elm$http$Http$post(
 		{
 			body: $elm$http$Http$jsonBody(jsonData),
-			expect: A2($elm$http$Http$expectJson, $author$project$Data$GotJwtToken, $author$project$User$jwtTokenDecoder),
+			expect: A2($elm$http$Http$expectJson, $author$project$User$GotJwtToken, $author$project$User$jwtTokenDecoder),
 			url: '/api/users/jwt-token/'
 		});
 };
-var $elm$browser$Browser$Navigation$pushUrl = _Browser_pushUrl;
-var $elm$url$Url$addPort = F2(
-	function (maybePort, starter) {
-		if (maybePort.$ === 'Nothing') {
-			return starter;
-		} else {
-			var port_ = maybePort.a;
-			return starter + (':' + $elm$core$String$fromInt(port_));
+var $author$project$User$update = F3(
+	function (msg, model, navKey) {
+		switch (msg.$) {
+			case 'LoginInputUsername':
+				var username = msg.a;
+				var login_ = model.login;
+				var nextLogin = _Utils_update(
+					login_,
+					{userName: username});
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{login: nextLogin}),
+					$elm$core$Platform$Cmd$none);
+			case 'LoginInputPassword':
+				var password = msg.a;
+				var login_ = model.login;
+				var nextLogin = _Utils_update(
+					login_,
+					{password: password});
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{login: nextLogin}),
+					$elm$core$Platform$Cmd$none);
+			case 'LoginSubmit':
+				return _Utils_Tuple2(
+					model,
+					$author$project$User$login(model.login));
+			default:
+				var result = msg.a;
+				if (result.$ === 'Ok') {
+					var token = result.a;
+					var login_ = model.login;
+					var clearedLogin = _Utils_update(
+						login_,
+						{error: $elm$core$Maybe$Nothing, password: '', userName: ''});
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{login: clearedLogin}),
+						A2($elm$browser$Browser$Navigation$pushUrl, navKey, '/'));
+				} else {
+					var error = result.a;
+					var login_ = model.login;
+					var nextLogin = _Utils_update(
+						login_,
+						{
+							error: $elm$core$Maybe$Just(error)
+						});
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{login: nextLogin}),
+						$elm$core$Platform$Cmd$none);
+				}
 		}
 	});
-var $elm$url$Url$addPrefixed = F3(
-	function (prefix, maybeSegment, starter) {
-		if (maybeSegment.$ === 'Nothing') {
-			return starter;
-		} else {
-			var segment = maybeSegment.a;
-			return _Utils_ap(
-				starter,
-				_Utils_ap(prefix, segment));
-		}
-	});
-var $elm$url$Url$toString = function (url) {
-	var http = function () {
-		var _v0 = url.protocol;
-		if (_v0.$ === 'Http') {
-			return 'http://';
-		} else {
-			return 'https://';
-		}
-	}();
-	return A3(
-		$elm$url$Url$addPrefixed,
-		'#',
-		url.fragment,
-		A3(
-			$elm$url$Url$addPrefixed,
-			'?',
-			url.query,
-			_Utils_ap(
-				A2(
-					$elm$url$Url$addPort,
-					url.port_,
-					_Utils_ap(http, url.host)),
-				url.path)));
-};
 var $author$project$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
@@ -11115,88 +11176,26 @@ var $author$project$Main$update = F2(
 						model,
 						{url: url}),
 					$elm$core$Platform$Cmd$none);
-			case 'LoginInputUsername':
-				var username = msg.a;
-				var user_ = model.user;
-				var login_ = model.user.login;
-				var nextLogin = _Utils_update(
-					login_,
-					{userName: username});
-				var nextUser = _Utils_update(
-					user_,
-					{login: nextLogin});
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{user: nextUser}),
-					$elm$core$Platform$Cmd$none);
-			case 'LoginInputPassword':
-				var password = msg.a;
-				var user_ = model.user;
-				var login_ = model.user.login;
-				var nextLogin = _Utils_update(
-					login_,
-					{password: password});
-				var nextUser = _Utils_update(
-					user_,
-					{login: nextLogin});
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{user: nextUser}),
-					$elm$core$Platform$Cmd$none);
-			case 'LoginSubmit':
-				return _Utils_Tuple2(
-					model,
-					$author$project$User$login(model.user.login));
 			default:
-				var result = msg.a;
-				if (result.$ === 'Ok') {
-					var token = result.a;
-					var user_ = model.user;
-					var login_ = model.user.login;
-					var clearedLogin = _Utils_update(
-						login_,
-						{error: $elm$core$Maybe$Nothing, password: '', userName: ''});
-					var newUser = _Utils_update(
-						user_,
-						{
-							login: clearedLogin,
-							token: $elm$core$Maybe$Just(token)
-						});
-					return _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{user: newUser}),
-						A2($elm$browser$Browser$Navigation$pushUrl, model.key, '/'));
-				} else {
-					var error = result.a;
-					var user_ = model.user;
-					var login_ = model.user.login;
-					var nextLogin = _Utils_update(
-						login_,
-						{
-							error: $elm$core$Maybe$Just(error)
-						});
-					var nextUser = _Utils_update(
-						user_,
-						{login: nextLogin});
-					return _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{user: nextUser}),
-						$elm$core$Platform$Cmd$none);
-				}
+				var userMsg = msg.a;
+				var _v2 = A3($author$project$User$update, userMsg, model.user, model.key);
+				var model_ = _v2.a;
+				var cmd_ = _v2.b;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{user: model_}),
+					A2($elm$core$Platform$Cmd$map, $author$project$Main$UserMessage, cmd_));
 		}
 	});
 var $elm$html$Html$b = _VirtualDom_node('b');
-var $author$project$Data$LoginInputPassword = function (a) {
+var $author$project$User$LoginInputPassword = function (a) {
 	return {$: 'LoginInputPassword', a: a};
 };
-var $author$project$Data$LoginInputUsername = function (a) {
+var $author$project$User$LoginInputUsername = function (a) {
 	return {$: 'LoginInputUsername', a: a};
 };
-var $author$project$Data$LoginSubmit = {$: 'LoginSubmit'};
+var $author$project$User$LoginSubmit = {$: 'LoginSubmit'};
 var $elm$html$Html$h1 = _VirtualDom_node('h1');
 var $author$project$User$loginView = function (model) {
 	return A2(
@@ -11221,8 +11220,8 @@ var $author$project$User$loginView = function (model) {
 						_List_fromArray(
 							[
 								$elm$html$Html$Attributes$type_('text'),
-								$elm$html$Html$Attributes$value(model.user.login.userName),
-								$elm$html$Html$Events$onInput($author$project$Data$LoginInputUsername)
+								$elm$html$Html$Attributes$value(model.login.userName),
+								$elm$html$Html$Events$onInput($author$project$User$LoginInputUsername)
 							]),
 						_List_Nil),
 						A2(
@@ -11230,15 +11229,15 @@ var $author$project$User$loginView = function (model) {
 						_List_fromArray(
 							[
 								$elm$html$Html$Attributes$type_('password'),
-								$elm$html$Html$Attributes$value(model.user.login.password),
-								$elm$html$Html$Events$onInput($author$project$Data$LoginInputPassword)
+								$elm$html$Html$Attributes$value(model.login.password),
+								$elm$html$Html$Events$onInput($author$project$User$LoginInputPassword)
 							]),
 						_List_Nil),
 						A2(
 						$elm$html$Html$button,
 						_List_fromArray(
 							[
-								$elm$html$Html$Events$onClick($author$project$Data$LoginSubmit)
+								$elm$html$Html$Events$onClick($author$project$User$LoginSubmit)
 							]),
 						_List_Nil)
 					]))
@@ -11363,8 +11362,8 @@ var $elm$url$Url$Parser$parse = F2(
 					url.fragment,
 					$elm$core$Basics$identity)));
 	});
-var $author$project$Data$LoginPage = {$: 'LoginPage'};
-var $author$project$Data$UserPage = function (a) {
+var $author$project$Main$LoginPage = {$: 'LoginPage'};
+var $author$project$Main$UserPage = function (a) {
 	return {$: 'UserPage', a: a};
 };
 var $elm$url$Url$Parser$Parser = function (a) {
@@ -11494,17 +11493,17 @@ var $elm$url$Url$Parser$top = $elm$url$Url$Parser$Parser(
 var $author$project$Main$routeParser = $elm$url$Url$Parser$oneOf(
 	_List_fromArray(
 		[
-			A2($elm$url$Url$Parser$map, $author$project$Data$IndexPage, $elm$url$Url$Parser$top),
+			A2($elm$url$Url$Parser$map, $author$project$Main$IndexPage, $elm$url$Url$Parser$top),
 			A2(
 			$elm$url$Url$Parser$map,
-			$author$project$Data$UserPage,
+			$author$project$Main$UserPage,
 			A2(
 				$elm$url$Url$Parser$slash,
 				$elm$url$Url$Parser$s('user'),
 				$elm$url$Url$Parser$string)),
 			A2(
 			$elm$url$Url$Parser$map,
-			$author$project$Data$LoginPage,
+			$author$project$Main$LoginPage,
 			$elm$url$Url$Parser$s('login'))
 		]));
 var $author$project$User$userView = function (model) {
@@ -11525,7 +11524,10 @@ var $author$project$Main$view = function (model) {
 				return {
 					body: _List_fromArray(
 						[
-							$author$project$User$userView(model)
+							A2(
+							$elm$html$Html$map,
+							$author$project$Main$UserMessage,
+							$author$project$User$userView(model.user))
 						]),
 					title: 'Users'
 				};
@@ -11534,7 +11536,10 @@ var $author$project$Main$view = function (model) {
 				return {
 					body: _List_fromArray(
 						[
-							$author$project$User$loginView(model)
+							A2(
+							$elm$html$Html$map,
+							$author$project$Main$UserMessage,
+							$author$project$User$loginView(model.user))
 						]),
 					title: 'login'
 				};
@@ -11587,9 +11592,9 @@ var $author$project$Main$view = function (model) {
 	}
 };
 var $author$project$Main$main = $elm$browser$Browser$application(
-	{init: $author$project$Main$init, onUrlChange: $author$project$Data$UrlChanged, onUrlRequest: $author$project$Data$LinkClicked, subscriptions: $author$project$Main$subscriptions, update: $author$project$Main$update, view: $author$project$Main$view});
+	{init: $author$project$Main$init, onUrlChange: $author$project$Main$UrlChanged, onUrlRequest: $author$project$Main$LinkClicked, subscriptions: $author$project$Main$subscriptions, update: $author$project$Main$update, view: $author$project$Main$view});
 _Platform_export({'Main':{'init':$author$project$Main$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Data.Msg","aliases":{"Url.Url":{"args":[],"type":"{ protocol : Url.Protocol, host : String.String, port_ : Maybe.Maybe Basics.Int, path : String.String, query : Maybe.Maybe String.String, fragment : Maybe.Maybe String.String }"}},"unions":{"Data.Msg":{"args":[],"tags":{"LinkClicked":["Browser.UrlRequest"],"UrlChanged":["Url.Url"],"LoginInputUsername":["String.String"],"LoginInputPassword":["String.String"],"LoginSubmit":[],"GotJwtToken":["Result.Result Http.Error String.String"]}},"Http.Error":{"args":[],"tags":{"BadUrl":["String.String"],"Timeout":[],"NetworkError":[],"BadStatus":["Basics.Int"],"BadBody":["String.String"]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Maybe.Maybe":{"args":["a"],"tags":{"Just":["a"],"Nothing":[]}},"Url.Protocol":{"args":[],"tags":{"Http":[],"Https":[]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"String.String":{"args":[],"tags":{"String":[]}},"Browser.UrlRequest":{"args":[],"tags":{"Internal":["Url.Url"],"External":["String.String"]}}}}})}});}(this));
+	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Url.Url":{"args":[],"type":"{ protocol : Url.Protocol, host : String.String, port_ : Maybe.Maybe Basics.Int, path : String.String, query : Maybe.Maybe String.String, fragment : Maybe.Maybe String.String }"}},"unions":{"Main.Msg":{"args":[],"tags":{"LinkClicked":["Browser.UrlRequest"],"UrlChanged":["Url.Url"],"UserMessage":["User.UserMsg"]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Maybe.Maybe":{"args":["a"],"tags":{"Just":["a"],"Nothing":[]}},"Url.Protocol":{"args":[],"tags":{"Http":[],"Https":[]}},"String.String":{"args":[],"tags":{"String":[]}},"Browser.UrlRequest":{"args":[],"tags":{"Internal":["Url.Url"],"External":["String.String"]}},"User.UserMsg":{"args":[],"tags":{"LoginInputUsername":["String.String"],"LoginInputPassword":["String.String"],"LoginSubmit":[],"GotJwtToken":["Result.Result Http.Error String.String"]}},"Http.Error":{"args":[],"tags":{"BadUrl":["String.String"],"Timeout":[],"NetworkError":[],"BadStatus":["Basics.Int"],"BadBody":["String.String"]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}}}}})}});}(this));
 
   var app = Elm.Main.init({ node: document.getElementById("elm") });
 }
