@@ -1,12 +1,14 @@
 module Data exposing (..)
 
 import Browser
-import Url
 import Browser.Navigation as Nav
 import Http
+import Url
+
 
 
 -- MODEL
+
 
 type alias Model =
     { key : Nav.Key
@@ -35,13 +37,14 @@ type alias Login =
     }
 
 
+
 -- UPDATE
+
 
 type Msg
     = LinkClicked Browser.UrlRequest
     | UrlChanged Url.Url
-
-    --  User Login
+      --  User Login
     | LoginInputUsername String
     | LoginInputPassword String
     | LoginSubmit
