@@ -10757,6 +10757,7 @@ var $author$project$Main$init = F3(
 				route: $author$project$Main$IndexPage,
 				url: url,
 				user: {
+					authUser: $elm$core$Maybe$Nothing,
 					login: {error: $elm$core$Maybe$Nothing, password: '', userName: ''},
 					token: $elm$core$Maybe$Nothing
 				}
@@ -10817,9 +10818,23 @@ var $elm$url$Url$toString = function (url) {
 					_Utils_ap(http, url.host)),
 				url.path)));
 };
-var $author$project$User$GotJwtToken = function (a) {
-	return {$: 'GotJwtToken', a: a};
+var $author$project$User$GotAuthUserInfo = function (a) {
+	return {$: 'GotAuthUserInfo', a: a};
 };
+var $author$project$User$AuthUser = F6(
+	function (userName, displayName, firstName, lastName, email, profile) {
+		return {displayName: displayName, email: email, firstName: firstName, lastName: lastName, profile: profile, userName: userName};
+	});
+var $elm$json$Json$Decode$map6 = _Json_map6;
+var $author$project$User$authUserDecoder = A7(
+	$elm$json$Json$Decode$map6,
+	$author$project$User$AuthUser,
+	A2($elm$json$Json$Decode$field, 'username', $elm$json$Json$Decode$string),
+	A2($elm$json$Json$Decode$field, 'display_name', $elm$json$Json$Decode$string),
+	A2($elm$json$Json$Decode$field, 'first_name', $elm$json$Json$Decode$string),
+	A2($elm$json$Json$Decode$field, 'last_name', $elm$json$Json$Decode$string),
+	A2($elm$json$Json$Decode$field, 'email', $elm$json$Json$Decode$string),
+	A2($elm$json$Json$Decode$field, 'profile', $elm$json$Json$Decode$string));
 var $elm$http$Http$BadStatus_ = F2(
 	function (a, b) {
 		return {$: 'BadStatus_', a: a, b: b};
@@ -10847,6 +10862,7 @@ var $elm$core$Maybe$isJust = function (maybe) {
 	}
 };
 var $elm$core$Platform$sendToSelf = _Platform_sendToSelf;
+var $elm$http$Http$emptyBody = _Http_emptyBody;
 var $elm$http$Http$expectStringResponse = F2(
 	function (toMsg, toResult) {
 		return A3(
@@ -10913,13 +10929,11 @@ var $elm$http$Http$expectJson = F2(
 						A2($elm$json$Json$Decode$decodeString, decoder, string));
 				}));
 	});
-var $elm$http$Http$jsonBody = function (value) {
-	return A2(
-		_Http_pair,
-		'application/json',
-		A2($elm$json$Json$Encode$encode, 0, value));
-};
-var $author$project$User$jwtTokenDecoder = A2($elm$json$Json$Decode$field, 'token', $elm$json$Json$Decode$string);
+var $elm$http$Http$Header = F2(
+	function (a, b) {
+		return {$: 'Header', a: a, b: b};
+	});
+var $elm$http$Http$header = $elm$http$Http$Header;
 var $elm$http$Http$Request = function (a) {
 	return {$: 'Request', a: a};
 };
@@ -11070,6 +11084,33 @@ var $elm$http$Http$request = function (r) {
 		$elm$http$Http$Request(
 			{allowCookiesFromOtherDomains: false, body: r.body, expect: r.expect, headers: r.headers, method: r.method, timeout: r.timeout, tracker: r.tracker, url: r.url}));
 };
+var $author$project$User$getAuthUserInfo = function (token) {
+	return $elm$http$Http$request(
+		{
+			body: $elm$http$Http$emptyBody,
+			expect: A2($elm$http$Http$expectJson, $author$project$User$GotAuthUserInfo, $author$project$User$authUserDecoder),
+			headers: _List_fromArray(
+				[
+					A2($elm$http$Http$header, 'Authorization', 'JWT ' + token),
+					A2($elm$http$Http$header, 'Accept', 'application/json'),
+					A2($elm$http$Http$header, 'Content-Type', 'application/json')
+				]),
+			method: 'GET',
+			timeout: $elm$core$Maybe$Nothing,
+			tracker: $elm$core$Maybe$Nothing,
+			url: '/api/users/auth-userinfo/'
+		});
+};
+var $author$project$User$GotJwtToken = function (a) {
+	return {$: 'GotJwtToken', a: a};
+};
+var $elm$http$Http$jsonBody = function (value) {
+	return A2(
+		_Http_pair,
+		'application/json',
+		A2($elm$json$Json$Encode$encode, 0, value));
+};
+var $author$project$User$jwtTokenDecoder = A2($elm$json$Json$Decode$field, 'token', $elm$json$Json$Decode$string);
 var $elm$http$Http$post = function (r) {
 	return $elm$http$Http$request(
 		{body: r.body, expect: r.expect, headers: _List_Nil, method: 'POST', timeout: $elm$core$Maybe$Nothing, tracker: $elm$core$Maybe$Nothing, url: r.url});
@@ -11121,7 +11162,7 @@ var $author$project$User$update = F3(
 				return _Utils_Tuple2(
 					model,
 					$author$project$User$login(model.login));
-			default:
+			case 'GotJwtToken':
 				var result = msg.a;
 				if (result.$ === 'Ok') {
 					var token = result.a;
@@ -11133,7 +11174,12 @@ var $author$project$User$update = F3(
 						_Utils_update(
 							model,
 							{login: clearedLogin}),
-						A2($elm$browser$Browser$Navigation$pushUrl, navKey, '/'));
+						$elm$core$Platform$Cmd$batch(
+							_List_fromArray(
+								[
+									$author$project$User$getAuthUserInfo(token),
+									A2($elm$browser$Browser$Navigation$pushUrl, navKey, '/')
+								])));
 				} else {
 					var error = result.a;
 					var login_ = model.login;
@@ -11146,6 +11192,25 @@ var $author$project$User$update = F3(
 						_Utils_update(
 							model,
 							{login: nextLogin}),
+						$elm$core$Platform$Cmd$none);
+				}
+			default:
+				var result = msg.a;
+				if (result.$ === 'Ok') {
+					var user = result.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{
+								authUser: $elm$core$Maybe$Just(user)
+							}),
+						$elm$core$Platform$Cmd$none);
+				} else {
+					var error = result.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{authUser: $elm$core$Maybe$Nothing}),
 						$elm$core$Platform$Cmd$none);
 				}
 		}
@@ -11594,7 +11659,7 @@ var $author$project$Main$view = function (model) {
 var $author$project$Main$main = $elm$browser$Browser$application(
 	{init: $author$project$Main$init, onUrlChange: $author$project$Main$UrlChanged, onUrlRequest: $author$project$Main$LinkClicked, subscriptions: $author$project$Main$subscriptions, update: $author$project$Main$update, view: $author$project$Main$view});
 _Platform_export({'Main':{'init':$author$project$Main$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Url.Url":{"args":[],"type":"{ protocol : Url.Protocol, host : String.String, port_ : Maybe.Maybe Basics.Int, path : String.String, query : Maybe.Maybe String.String, fragment : Maybe.Maybe String.String }"}},"unions":{"Main.Msg":{"args":[],"tags":{"LinkClicked":["Browser.UrlRequest"],"UrlChanged":["Url.Url"],"UserMessage":["User.UserMsg"]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Maybe.Maybe":{"args":["a"],"tags":{"Just":["a"],"Nothing":[]}},"Url.Protocol":{"args":[],"tags":{"Http":[],"Https":[]}},"String.String":{"args":[],"tags":{"String":[]}},"Browser.UrlRequest":{"args":[],"tags":{"Internal":["Url.Url"],"External":["String.String"]}},"User.UserMsg":{"args":[],"tags":{"LoginInputUsername":["String.String"],"LoginInputPassword":["String.String"],"LoginSubmit":[],"GotJwtToken":["Result.Result Http.Error String.String"]}},"Http.Error":{"args":[],"tags":{"BadUrl":["String.String"],"Timeout":[],"NetworkError":[],"BadStatus":["Basics.Int"],"BadBody":["String.String"]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}}}}})}});}(this));
+	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Url.Url":{"args":[],"type":"{ protocol : Url.Protocol, host : String.String, port_ : Maybe.Maybe Basics.Int, path : String.String, query : Maybe.Maybe String.String, fragment : Maybe.Maybe String.String }"},"User.AuthUser":{"args":[],"type":"{ userName : String.String, displayName : String.String, firstName : String.String, lastName : String.String, email : String.String, profile : String.String }"}},"unions":{"Main.Msg":{"args":[],"tags":{"LinkClicked":["Browser.UrlRequest"],"UrlChanged":["Url.Url"],"UserMessage":["User.UserMsg"]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Maybe.Maybe":{"args":["a"],"tags":{"Just":["a"],"Nothing":[]}},"Url.Protocol":{"args":[],"tags":{"Http":[],"Https":[]}},"String.String":{"args":[],"tags":{"String":[]}},"Browser.UrlRequest":{"args":[],"tags":{"Internal":["Url.Url"],"External":["String.String"]}},"User.UserMsg":{"args":[],"tags":{"LoginInputUsername":["String.String"],"LoginInputPassword":["String.String"],"LoginSubmit":[],"GotJwtToken":["Result.Result Http.Error String.String"],"GotAuthUserInfo":["Result.Result Http.Error User.AuthUser"]}},"Http.Error":{"args":[],"tags":{"BadUrl":["String.String"],"Timeout":[],"NetworkError":[],"BadStatus":["Basics.Int"],"BadBody":["String.String"]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}}}}})}});}(this));
 
   var app = Elm.Main.init({ node: document.getElementById("elm") });
 }

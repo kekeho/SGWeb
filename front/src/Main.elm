@@ -57,6 +57,7 @@ init flags url key =
       , user =
             { token = Nothing
             , login = { userName = "", password = "", error = Nothing }
+            , authUser = Nothing
             }
       }
     , Cmd.none

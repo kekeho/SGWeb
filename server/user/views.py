@@ -24,7 +24,7 @@ class UserRegister(generics.CreateAPIView):
 
 # Get authenticated user info (GET)
 class AuthUserInfo(generics.RetrieveAPIView):
-    permission_classes = (permissions.IsAuthenticated, permissions.IsAdminUser)
+    permission_classes = (permissions.IsAuthenticated,)
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
@@ -46,7 +46,7 @@ class AuthUserInfo(generics.RetrieveAPIView):
 
 # Update user info (PATCH)
 class AuthUserUpdate(generics.UpdateAPIView):
-    permission_classes = (permissions.IsAuthenticated, permissions.IsAdminUser)
+    permission_classes = (permissions.IsAuthenticated,)
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
@@ -62,7 +62,7 @@ class AuthUserUpdate(generics.UpdateAPIView):
 
 # Delete user (DELETE)
 class AuthUserDelete(generics.DestroyAPIView):
-    permission_classes = (permissions.IsAuthenticated, permissions.IsAdminUser)
+    permission_classes = (permissions.IsAuthenticated,)
     serializer_class = UserSerializer
     queryset = User.objects.all()
 

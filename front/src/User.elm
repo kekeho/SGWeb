@@ -9,7 +9,6 @@ import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Decode as Decode
 import Json.Encode as Encode
-import Url.Parser as Url exposing ((</>))
 
 
 
@@ -19,6 +18,7 @@ import Url.Parser as Url exposing ((</>))
 type alias UserModel =
     { token : Maybe String
     , login : Login
+    , authUser : Maybe AuthUser
     }
 
 
@@ -26,6 +26,16 @@ type alias Login =
     { userName : String
     , password : String
     , error : Maybe Http.Error
+    }
+
+
+type alias AuthUser =
+    { userName : String
+    , displayName : String
+    , firstName : String
+    , lastName : String
+    , email : String
+    , profile : String
     }
 
 
@@ -38,6 +48,7 @@ type UserMsg
     | LoginInputPassword String
     | LoginSubmit
     | GotJwtToken (Result Http.Error String)
+    | GotAuthUserInfo (Result Http.Error AuthUser)
 
 
 update : UserMsg -> UserModel -> Nav.Key -> ( UserModel, Cmd UserMsg )
@@ -81,7 +92,7 @@ update msg model navKey =
                             { login_ | userName = "", password = "", error = Nothing }
                     in
                     ( { model | login = clearedLogin }
-                    , Nav.pushUrl navKey "/"
+                    , Cmd.batch [ getAuthUserInfo token, Nav.pushUrl navKey "/" ]
                     )
 
                 Err error ->
@@ -95,6 +106,16 @@ update msg model navKey =
                     ( { model | login = nextLogin }
                     , Cmd.none
                     )
+
+        GotAuthUserInfo result ->
+            case result of
+                Ok user ->
+                    ( { model | authUser = Just user }
+                    , Cmd.none
+                    )
+
+                Err error ->
+                    ( { model | authUser = Nothing }, Cmd.none )
 
 
 
@@ -141,6 +162,23 @@ login info =
         }
 
 
+getAuthUserInfo : String -> Cmd UserMsg
+getAuthUserInfo token =
+    Http.request
+        { method = "GET"
+        , headers =
+            [ Http.header "Authorization" ("JWT " ++ token)
+            , Http.header "Accept" "application/json"
+            , Http.header "Content-Type" "application/json"
+            ]
+        , url = "/api/users/auth-userinfo/"
+        , expect = Http.expectJson GotAuthUserInfo authUserDecoder
+        , body = Http.emptyBody
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+
+
 
 -- FUNCTIONS
 
@@ -148,3 +186,14 @@ login info =
 jwtTokenDecoder : Decode.Decoder String
 jwtTokenDecoder =
     Decode.field "token" Decode.string
+
+
+authUserDecoder : Decode.Decoder AuthUser
+authUserDecoder =
+    Decode.map6 AuthUser
+        (Decode.field "username" Decode.string)
+        (Decode.field "display_name" Decode.string)
+        (Decode.field "first_name" Decode.string)
+        (Decode.field "last_name" Decode.string)
+        (Decode.field "email" Decode.string)
+        (Decode.field "profile" Decode.string)
