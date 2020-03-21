@@ -7,4 +7,4 @@ WORKDIR /var/www
 # Install dependencies
 RUN pip install -r requirements.txt
 
-ENTRYPOINT [ "sh", "entrypoint.sh" ]
+CMD [ "sh", "cmd.sh" ]
