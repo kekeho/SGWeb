@@ -6,8 +6,10 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Url
 import Url.Parser exposing ((</>))
-import Task
-import User
+import User.UserPageModel as UserPageModel
+import User.UserPage as UserPage
+import User.LoginModel as LoginModel
+import User.LoginPage  as LoginPage
 
 import Model exposing (..)
 
@@ -31,7 +33,8 @@ main =
 type Msg
     = LinkClicked Browser.UrlRequest
     | UrlChanged Url.Url
-    | UserMessage User.UserMsg
+    | UserPageMsg UserPage.UserMsg
+    | LoginPageMsg LoginPage.LoginMsg
 
 
 init : () -> Url.Url -> Nav.Key -> ( RootModel, Cmd Msg )
@@ -39,11 +42,12 @@ init flags url key =
     ( { key = key
       , url = url
       , route = IndexPage
-      , user =
+      , userPage =
+            Nothing
+      , login =
             { token = Nothing
-            , login = { userName = "", password = "", error = Nothing }
+            , loginPage = { userName = "", password = "", error = Nothing }
             , authUser = Nothing
-            , user = Nothing
             }
       }
     , Nav.pushUrl key (Url.toString url)
@@ -71,18 +75,27 @@ update msg rootModel =
             
             case Url.Parser.parse routeParser rootModel.url of
                 Just (UserPage username) ->
-                    Cmd.map UserMessage (User.getUserInfo username)
+                    Cmd.map UserPageMsg (UserPage.getUserInfo username)
                 _ ->
                     Cmd.none
             )
 
-        UserMessage userMsg ->
+        UserPageMsg subMsg ->
             let
-                ( rootModel_, cmd_ ) =
-                    User.update userMsg rootModel.user rootModel.key
+                ( userModel_, cmd_ ) =
+                    UserPage.update subMsg rootModel.userPage rootModel.key
             in
-            ( { rootModel | user = rootModel_ }
-            , Cmd.map UserMessage cmd_
+            ( { rootModel | userPage = userModel_ }
+            , Cmd.map UserPageMsg cmd_
+            )
+        
+        LoginPageMsg subMsg ->
+            let
+                ( loginModel_, cmd_ ) =
+                    LoginPage.update subMsg rootModel.login rootModel.key
+            in
+            ( { rootModel | login = loginModel_ }
+            , Cmd.map LoginPageMsg cmd_
             )
 
 
@@ -98,13 +111,13 @@ view rootModel =
                 Just (UserPage user) ->
                     { title = "Users"
                     , body =
-                        [ User.userView rootModel.user |> Html.map UserMessage ]
+                        [ UserPage.view rootModel.userPage |> Html.map UserPageMsg ]
                     }
 
                 Just LoginPage ->
                     { title = "login"
                     , body =
-                        [ User.loginView rootModel.user |> Html.map UserMessage ]
+                        [ LoginPage.view rootModel.login |> Html.map LoginPageMsg ]
                     }
 
                 Just IndexPage ->
