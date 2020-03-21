@@ -11,5 +11,5 @@ urlpatterns = [
     path('update/', AuthUserUpdate.as_view()),
     path('delete/', AuthUserDelete.as_view()),
 
-    path('info', UserGet.as_view()),
+    path('info/<str:username>', UserGet.as_view()),
 ]

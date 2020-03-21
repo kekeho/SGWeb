@@ -54,7 +54,7 @@ getUserInfo username =
             [ Http.header "Accept" "application/json"
             , Http.header "Content-Type" "application/json"
             ]
-        , url = "/api/users/info?username=" ++ username
+        , url = "/api/users/info/" ++ username
         , expect = Http.expectJson GotUserInfo userDecoder
         , body = Http.emptyBody
         , timeout = Nothing

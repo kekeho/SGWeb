@@ -6,7 +6,7 @@ from django.db import transaction
 
 
 from .models import User
-from .serializer import UserSerializer
+from .serializer import UserSerializer, NormalUserSerializer
 
 # Regist user (POST)
 class UserRegister(generics.CreateAPIView):
@@ -78,9 +78,9 @@ class AuthUserDelete(generics.DestroyAPIView):
 # User info (GET)
 class UserGet(generics.RetrieveAPIView):
     permission_classes = (permissions.AllowAny,)
-    serializer_class = UserSerializer
+    serializer_class = NormalUserSerializer
     queryset = User.objects.all()
-    filter_fields = ('username',)
+    lookup_field = 'username'
 
     class Meta:
         model = User
