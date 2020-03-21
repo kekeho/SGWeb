@@ -6,6 +6,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Url
 import Url.Parser exposing ((</>))
+import Task
 import User
 
 
@@ -44,7 +45,7 @@ type Msg
 type alias Model =
     { key : Nav.Key
     , url : Url.Url
-    , user : User.UserModel
+    , user : User.UserPageModel
     , route : Route
     }
 
@@ -58,9 +59,10 @@ init flags url key =
             { token = Nothing
             , login = { userName = "", password = "", error = Nothing }
             , authUser = Nothing
+            , user = Nothing
             }
       }
-    , Cmd.none
+    , Nav.pushUrl key (Url.toString url)
     )
 
 
@@ -81,7 +83,13 @@ update msg model =
 
         UrlChanged url ->
             ( { model | url = url }
-            , Cmd.none
+            , 
+            
+            case Url.Parser.parse routeParser model.url of
+                Just (UserPage username) ->
+                    Cmd.map UserMessage (User.getUserInfo username)
+                _ ->
+                    Cmd.none
             )
 
         UserMessage userMsg ->

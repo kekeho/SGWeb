@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.db import transaction
 
+
 from .models import User
 from .serializer import UserSerializer
 
@@ -72,3 +73,15 @@ class AuthUserDelete(generics.DestroyAPIView):
             return instance
         except User.DoesNotExist:
             raise Http404
+
+
+# User info (GET)
+class UserGet(generics.RetrieveAPIView):
+    permission_classes = (permissions.AllowAny,)
+    serializer_class = UserSerializer
+    queryset = User.objects.all()
+    filter_fields = ('username',)
+
+    class Meta:
+        model = User
+        fields = ('username', 'display_name', 'profile')

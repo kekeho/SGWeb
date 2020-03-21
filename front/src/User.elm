@@ -15,10 +15,11 @@ import Json.Encode as Encode
 -- MODEL
 
 
-type alias UserModel =
+type alias UserPageModel =
     { token : Maybe String
     , login : Login
     , authUser : Maybe AuthUser
+    , user : Maybe User
     }
 
 
@@ -39,6 +40,13 @@ type alias AuthUser =
     }
 
 
+type alias User =
+    { userName : String
+    , displayName : String
+    , profile : String
+    }
+
+
 
 -- UPDATE
 
@@ -49,9 +57,10 @@ type UserMsg
     | LoginSubmit
     | GotJwtToken (Result Http.Error String)
     | GotAuthUserInfo (Result Http.Error AuthUser)
+    | GotUserInfo (Result Http.Error User)
 
 
-update : UserMsg -> UserModel -> Nav.Key -> ( UserModel, Cmd UserMsg )
+update : UserMsg -> UserPageModel -> Nav.Key -> ( UserPageModel, Cmd UserMsg )
 update msg model navKey =
     case msg of
         LoginInputUsername username ->
@@ -116,19 +125,31 @@ update msg model navKey =
 
                 Err error ->
                     ( { model | authUser = Nothing }, Cmd.none )
+        
+        GotUserInfo result ->
+            case result of
+                Ok user ->
+                    ( { model | user = Just user }
+                    , Cmd.none
+                    )
+                
+                Err error ->
+                    ( { model | user = Nothing }
+                    , Cmd.none
+                    )
 
 
 
 -- VIEWS
 
 
-userView : UserModel -> Html UserMsg
+userView : UserPageModel -> Html UserMsg
 userView model =
-    div []
+    div [ ]
         [ text "user view" ]
 
 
-loginView : UserModel -> Html UserMsg
+loginView : UserPageModel -> Html UserMsg
 loginView model =
     div []
         [ h1 [] [ text "login" ]
@@ -179,6 +200,22 @@ getAuthUserInfo token =
         }
 
 
+getUserInfo : String -> Cmd UserMsg
+getUserInfo username =
+    Http.request
+        { method = "GET"
+        , headers =
+            [ Http.header "Accept" "application/json"
+            , Http.header "Content-Type" "application/json"
+            ]
+        , url = "/api/users/info?username=" ++ username
+        , expect = Http.expectJson GotUserInfo userDecoder
+        , body = Http.emptyBody
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+
+
 
 -- FUNCTIONS
 
@@ -196,4 +233,12 @@ authUserDecoder =
         (Decode.field "first_name" Decode.string)
         (Decode.field "last_name" Decode.string)
         (Decode.field "email" Decode.string)
+        (Decode.field "profile" Decode.string)
+
+
+userDecoder : Decode.Decoder User
+userDecoder =
+    Decode.map3 User
+        (Decode.field "username" Decode.string)
+        (Decode.field "display_name" Decode.string)
         (Decode.field "profile" Decode.string)
