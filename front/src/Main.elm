@@ -9,12 +9,14 @@ import Url.Parser exposing ((</>))
 import Task
 import User
 
+import Model exposing (..)
+
 
 
 -- MAIN
 
 
-main : Program () Model Msg
+main : Program () RootModel Msg
 main =
     Browser.application
         { init = init
@@ -26,31 +28,13 @@ main =
         }
 
 
-
--- MODEL
-
-
-type Route
-    = IndexPage
-    | UserPage String
-    | LoginPage
-
-
 type Msg
     = LinkClicked Browser.UrlRequest
     | UrlChanged Url.Url
     | UserMessage User.UserMsg
 
 
-type alias Model =
-    { key : Nav.Key
-    , url : Url.Url
-    , user : User.UserPageModel
-    , route : Route
-    }
-
-
-init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
+init : () -> Url.Url -> Nav.Key -> ( RootModel, Cmd Msg )
 init flags url key =
     ( { key = key
       , url = url
@@ -70,22 +54,22 @@ init flags url key =
 -- UPDATE
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : Msg -> RootModel -> ( RootModel, Cmd Msg )
+update msg rootModel =
     case msg of
         LinkClicked urlRequest ->
             case urlRequest of
                 Browser.Internal url ->
-                    ( model, Nav.pushUrl model.key (Url.toString url) )
+                    ( rootModel, Nav.pushUrl rootModel.key (Url.toString url) )
 
                 Browser.External href ->
-                    ( model, Nav.load href )
+                    ( rootModel, Nav.load href )
 
         UrlChanged url ->
-            ( { model | url = url }
+            ( { rootModel | url = url }
             , 
             
-            case Url.Parser.parse routeParser model.url of
+            case Url.Parser.parse routeParser rootModel.url of
                 Just (UserPage username) ->
                     Cmd.map UserMessage (User.getUserInfo username)
                 _ ->
@@ -94,10 +78,10 @@ update msg model =
 
         UserMessage userMsg ->
             let
-                ( model_, cmd_ ) =
-                    User.update userMsg model.user model.key
+                ( rootModel_, cmd_ ) =
+                    User.update userMsg rootModel.user rootModel.key
             in
-            ( { model | user = model_ }
+            ( { rootModel | user = rootModel_ }
             , Cmd.map UserMessage cmd_
             )
 
@@ -106,26 +90,26 @@ update msg model =
 -- VIEW
 
 
-view : Model -> Browser.Document Msg
-view model =
-    case Url.Parser.parse routeParser model.url of
+view : RootModel -> Browser.Document Msg
+view rootModel =
+    case Url.Parser.parse routeParser rootModel.url of
         Just (UserPage user) ->
             { title = "Users"
             , body =
-                [ User.userView model.user |> Html.map UserMessage ]
+                [ User.userView rootModel.user |> Html.map UserMessage ]
             }
 
         Just LoginPage ->
             { title = "login"
             , body =
-                [ User.loginView model.user |> Html.map UserMessage ]
+                [ User.loginView rootModel.user |> Html.map UserMessage ]
             }
 
         Just IndexPage ->
             { title = "URL Interceptor"
             , body =
                 [ text "The Current URL is: "
-                , b [] [ text (Url.toString model.url) ]
+                , b [] [ text (Url.toString rootModel.url) ]
                 , a [ href "/user/hogefuga" ] [ text "hogefuga" ]
                 , a [ href "/login" ] [ text "login" ]
                 ]
@@ -142,8 +126,8 @@ view model =
 -- SUBSCRIPTIONS
 
 
-subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions : RootModel -> Sub Msg
+subscriptions rootModel =
     Sub.none
 
 
