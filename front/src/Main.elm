@@ -92,35 +92,57 @@ update msg rootModel =
 
 view : RootModel -> Browser.Document Msg
 view rootModel =
-    case Url.Parser.parse routeParser rootModel.url of
-        Just (UserPage user) ->
-            { title = "Users"
-            , body =
-                [ User.userView rootModel.user |> Html.map UserMessage ]
-            }
+    let
+        pageView =
+            case Url.Parser.parse routeParser rootModel.url of
+                Just (UserPage user) ->
+                    { title = "Users"
+                    , body =
+                        [ User.userView rootModel.user |> Html.map UserMessage ]
+                    }
 
-        Just LoginPage ->
-            { title = "login"
-            , body =
-                [ User.loginView rootModel.user |> Html.map UserMessage ]
-            }
+                Just LoginPage ->
+                    { title = "login"
+                    , body =
+                        [ User.loginView rootModel.user |> Html.map UserMessage ]
+                    }
 
-        Just IndexPage ->
-            { title = "URL Interceptor"
-            , body =
-                [ text "The Current URL is: "
-                , b [] [ text (Url.toString rootModel.url) ]
-                , a [ href "/user/hogefuga" ] [ text "hogefuga" ]
-                , a [ href "/login" ] [ text "login" ]
+                Just IndexPage ->
+                    { title = "URL Interceptor"
+                    , body =
+                        [ text "The Current URL is: "
+                        , b [] [ text (Url.toString rootModel.url) ]
+                        , a [ href "/user/hogefuga" ] [ text "hogefuga" ]
+                        , a [ href "/login" ] [ text "login" ]
+                        ]
+                    }
+
+                Nothing ->
+                    { title = "404"
+                    , body =
+                        [ text "404" ]
+                    }
+    in
+    { title = "SGWeb | " ++ pageView.title
+    , body =
+        [ navbarView
+        ] 
+        ++ pageView.body
+    }
+
+
+navbarView : Html Msg
+navbarView =
+    nav [ class "navbar navbar-expand navbar-dark bg-dark" ]
+        [ a [ class "navbar-brand", href "/"] [ text "SGWeb"]
+        , ul [ class "navbar-nav mr-auto" ] []
+        , ul [ class "navbar-nav" ]
+            [ li [ class "nav-item" ]
+                [ a [ class "nav-link", href "https://twitter.com/minyoruminyon/" ] 
+                    [ text "Twitter Edition" ]
                 ]
-            }
-
-        Nothing ->
-            { title = "404"
-            , body =
-                [ text "404" ]
-            }
-
+            ]
+        ]
 
 
 -- SUBSCRIPTIONS
