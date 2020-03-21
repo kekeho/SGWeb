@@ -60,7 +60,7 @@ update msg model navKey =
                         clearedLogin =
                             { login_ | userName = "", password = "", error = Nothing }
                     in
-                    ( { model | loginPage = clearedLogin }
+                    ( { model | token = Just token, loginPage = clearedLogin }
                     , Cmd.batch [ getAuthUserInfo token, Nav.pushUrl navKey "/" ]
                     )
 
