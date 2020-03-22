@@ -1,0 +1,23 @@
+body {
+    min-height: 100vh;
+    position: relative;
+    background-color: rgb(15, 1, 31);
+    color: #ffffff;
+}
+
+
+footer {
+    background-color: #151e26;
+
+    text-align: center;
+    padding: 2rem;
+
+    position: absolute;
+    bottom: 0;
+    width: 100vw;
+}
+
+footer a {
+    padding: 0 0.5rem;
+}
+

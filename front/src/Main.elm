@@ -141,6 +141,7 @@ view rootModel =
         [ navbarView
         ] 
         ++ pageView.body
+        ++ [ footerView ]
     }
 
 
@@ -154,6 +155,17 @@ navbarView =
                 [ a [ class "nav-link", href "https://twitter.com/minyoruminyon/" ] 
                     [ text "Twitter Edition" ]
                 ]
+            ]
+        ]
+
+
+footerView : Html Msg
+footerView =
+    footer [ class "footer" ]
+        [ div [ class "container" ]
+            [ p [] [ text "by Hiroki Takemura (kekeho)"]
+            , a [ href "https://twitter.com/k3k3h0" ] [ text "Twitter: @k3k3h0" ]
+            , a [ href "https://github.com/kekeho" ] [ text "GitHub: @kekeho" ]
             ]
         ]
 
