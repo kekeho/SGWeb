@@ -56,18 +56,52 @@ view : EditorModel -> Html Msg
 view editorModel =
     div [ class "container editor-page" ]
         [ div [ class "row" ]
-            [ div [ class "col-md-6 editor" ]
-                [ div [ class "row"]
-                    [ div [ class "col-12"]
-                        [ input [ class "text", onInput TagInput ] []
-                        ] -- tag input
-                    , div [ class "col-12"]
-                        [ textarea [ onInput ContentInput, value editorModel.content ] [] 
-                        ]
-                    ]
-                    , div [ class "col-12"]
-                        [ button [ onClick TestSubmit ] [ text "Test" ]
-                        ]
+            [ div [ class "col-md-6 editor"]
+                [ editorView editorModel ]
+            , div [ class "col-md-6 result" ]
+                [ resultView editorModel]
+            ]
+        ]
+
+
+editorView : EditorModel -> Html Msg
+editorView editorModel =
+    div [ class "row"]
+        [ div [ class "col-12"]
+            [ input [ class "text", onInput TagInput ] []
+            ]
+        , div [ class "col-12"]
+            [ textarea [ class "editor", onInput ContentInput, value editorModel.content ] [] 
+            ]
+        , div [ class "col-12"]
+            [ button [ onClick TestSubmit ] [ text "Test" ] ]
+        ]
+
+
+resultView : EditorModel -> Html Msg
+resultView editorModel =
+    let
+        (output, status, content) =
+            case editorModel.testResult of
+                Just result ->
+                    (result.result_output, Just result.result_status, result.content)    
+                Nothing ->
+                    ("", Nothing, "")
+    in
+    
+    div [ class "row" ]
+        [ div [ class "col-12" ]
+            [ h2 [ ] [ text "Output" ]
+            , div [ class "output" ]
+                [ text output ]
+            ]
+        , div [ class "col-12" ]
+            [ div [ class "status" ]
+                [ case status of
+                    Just val ->
+                        text ("Status : " ++ String.fromInt val)
+                    Nothing ->
+                        text ""
                 ]
             ]
         ]
