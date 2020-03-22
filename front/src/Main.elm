@@ -5,11 +5,12 @@ import Browser.Navigation as Nav
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Url
-import Url.Parser exposing ((</>))
+import Url.Parser
 import User.UserPageModel as UserPageModel
 import User.UserPage as UserPage
 import User.LoginModel as LoginModel
 import User.LoginPage  as LoginPage
+import Post.EditorPage as EditorPage
 
 import Model exposing (..)
 
@@ -35,6 +36,7 @@ type Msg
     | UrlChanged Url.Url
     | UserPageMsg UserPage.UserMsg
     | LoginPageMsg LoginPage.LoginMsg
+    | EditorPageMsg EditorPage.Msg
 
 
 init : () -> Url.Url -> Nav.Key -> ( RootModel, Cmd Msg )
@@ -48,6 +50,12 @@ init flags url key =
             { token = Nothing
             , loginPage = { userName = "", password = "", error = Nothing }
             , authUser = Nothing
+            }
+      , editorPage =
+            { content = ""
+            , tags = []
+            , testResult = Nothing
+            , testPostError = Nothing
             }
       }
     , Nav.pushUrl key (Url.toString url)
@@ -97,6 +105,22 @@ update msg rootModel =
             ( { rootModel | login = loginModel_ }
             , Cmd.map LoginPageMsg cmd_
             )
+        
+        EditorPageMsg subMsg ->
+            case rootModel.login.token of
+                Nothing ->
+                    ( rootModel
+                    , Nav.pushUrl rootModel.key "/login"
+                    )
+            
+                Just token ->
+                    let
+                        ( editorModel_, cmd_ ) =
+                            EditorPage.update subMsg rootModel.editorPage token
+                    in
+                    ( { rootModel | editorPage = editorModel_ }
+                    , Cmd.map EditorPageMsg cmd_
+                    )
 
 
 
@@ -127,7 +151,14 @@ view rootModel =
                         , b [] [ text (Url.toString rootModel.url) ]
                         , a [ href "/user/hogefuga" ] [ text "hogefuga" ]
                         , a [ href "/login" ] [ text "login" ]
+                        , a [ href "/post" ] [ text "post"]
                         ]
+                    }
+                
+                Just EditorPage ->
+                    { title = "POST"
+                    , body =
+                        [ EditorPage.view rootModel.editorPage |> Html.map EditorPageMsg ]
                     }
 
                 Nothing ->
@@ -176,16 +207,3 @@ footerView =
 subscriptions : RootModel -> Sub Msg
 subscriptions rootModel =
     Sub.none
-
-
-
--- FUNCTIONS
-
-
-routeParser : Url.Parser.Parser (Route -> a) a
-routeParser =
-    Url.Parser.oneOf
-        [ Url.Parser.map IndexPage Url.Parser.top
-        , Url.Parser.map UserPage (Url.Parser.s "user" </> Url.Parser.string)
-        , Url.Parser.map LoginPage (Url.Parser.s "login")
-        ]
