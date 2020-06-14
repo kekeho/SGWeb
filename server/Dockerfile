@@ -1,10 +1,12 @@
-FROM python:3.8
+FROM python:3.7
 
+COPY ./requirements.txt /code/requirements.txt
+WORKDIR /code
 
-COPY ./requirements.txt /var/www/requirements.txt
-WORKDIR /var/www
-
-# Install dependencies
 RUN pip install -r requirements.txt
 
-CMD [ "sh", "cmd.sh" ]
+COPY ./ /code
+
+EXPOSE 8000
+
+CMD [ "python", "main.py" ]

@@ -3,10 +3,8 @@ services:
   api:
     build: ./server
     volumes:
-      - ./server:/var/www/
+      - ./server:/code
       - /var/run/docker.sock:/var/run/docker.sock:ro
-    ports:
-      - "3031:3031"
     environment:
       DB_PASSWORD: ${DB_PASSWORD}
       TZ: "UTC"
@@ -48,7 +46,7 @@ services:
 
   
   postgres:
-    image: postgres
+    build: db
     environment:
       POSTGRES_USER: "sgweb"
       POSTGRES_PASSWORD: ${DB_PASSWORD}

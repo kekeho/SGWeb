@@ -1,111 +1,81 @@
-from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
-from django.contrib.auth.validators import UnicodeUsernameValidator, ASCIIUsernameValidator
-from django.utils import timezone
-from django.utils.translation import gettext_lazy as _
-from django.core.mail import send_mail
-from django.contrib.auth.base_user import BaseUserManager
-import uuid
+from datetime import datetime
+import db.db as db
+from sqlalchemy import Column, String, DateTime, ForeignKey
+from sqlalchemy.sql.functions import current_timestamp
+from sqlalchemy.dialects.postgresql import INTEGER, BOOLEAN
+from pydantic import BaseModel
 
-class UserManager(BaseUserManager):
-    use_in_migrations = True
+import hashlib
 
-    def _create_user(self, username, email, password, **extra_fields):
-        """
-        Create and save a user with the given username, email, and password.
-        """
-        if not username:
-            raise ValueError('The given username must be set')
-        email = self.normalize_email(email)
-        username = self.model.normalize_username(username)
-        user = self.model(username=username, email=email, **extra_fields)
-        user.set_password(password)
-        user.save(using=self._db)
-        return user
+Base = db.Base
 
-    def create_user(self, username, email=None, password=None, **extra_fields):
-        extra_fields.setdefault('is_staff', False)
-        extra_fields.setdefault('is_superuser', False)
-        return self._create_user(username, email, password, **extra_fields)
 
-    def create_superuser(self, username, email, password, **extra_fields):
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
-
-        if extra_fields.get('is_staff') is not True:
-            raise ValueError('Superuser must have is_staff=True.')
-        if extra_fields.get('is_superuser') is not True:
-            raise ValueError('Superuser must have is_superuser=True.')
-
-        return self._create_user(username, email, password, **extra_fields)
-
-class User(AbstractBaseUser, PermissionsMixin):
+class User(Base):
     """
-    An abstract base class implementing a fully featured User model with
-    admin-compliant permissions.
-    Username and password are required. Other fields are optional.
+    User Table
+
+    id : ID
+    username : Username
+    password : Password
+    email : E-mail Address
+    date_registered : Account Registration Date
     """
-    uuid = models.UUIDField(default=uuid.uuid4(), blank=False, null=False, unique=True)
-
-    username_validator = ASCIIUsernameValidator()
-    username = models.CharField(
-        _('username'),
-        max_length=30,
-        unique=True,
-        help_text=_('Required. 30 characters or fewer. Letters, digits and @/./+/-/_ only.'),
-        validators=[username_validator],
-        error_messages={
-            'unique': _("A user with that username already exists."),
-        },
+    __tablename__ = 'user'
+    id = Column(
+        'id',
+        INTEGER(),
+        primary_key=True,
+        autoincrement=True,
     )
+    username = Column('username', String(140), nullable=False, unique=True)
+    password = Column('password', String(128), nullable=False)
+    email = Column('email', String(140))
+    date_registered = Column('date_registered', DateTime,
+                             default=datetime.now(), nullable=False)
 
-    display_name = models.CharField(_('display name'), max_length=30, blank=False, null=False, default='New User')
-    first_name = models.CharField(_('first name'), max_length=30, blank=True)
-    last_name = models.CharField(_('last name'), max_length=150, blank=True)
-    email = models.EmailField(_('email address'), blank=False, null=False, unique=True)
+    def __init__(self, username, password, email):
+        self.username = username
+        self.password = hashlib.sha512(password.encode()).hexdigest()
+        self.email = email
 
-    profile = models.TextField(_('profile'), max_length=240, blank=True)
+    def __str__(self):
+        return f'{self.id} : {self.username}'
 
-    is_staff = models.BooleanField(
-        _('staff status'),
-        default=False,
-        help_text=_('Designates whether the user can log into this admin site.'),
-    )
-    is_active = models.BooleanField(
-        _('active'),
-        default=True,
-        help_text=_(
-            'Designates whether this user should be treated as active. '
-            'Unselect this instead of deleting accounts.'
-        ),
-    )
-    date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
 
-    objects = UserManager()
+class RegistUserModel(BaseModel):
+    """
+    /regist param
+    """
+    username: str
+    password: str
+    email: str
 
-    EMAIL_FIELD = 'email'
-    USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['email']
 
-    class Meta:
-        verbose_name = _('user')
-        verbose_name_plural = _('users')
+class GetTokenModel(BaseModel):
+    """
+    /get_token param
+    """
+    username: str
+    password: str
 
-    def clean(self):
-        super().clean()
-        self.email = self.__class__.objects.normalize_email(self.email)
 
-    def get_full_name(self):
-        """
-        Return the first_name plus the last_name, with a space in between.
-        """
-        full_name = '%s %s' % (self.first_name, self.last_name)
-        return full_name.strip()
+class GetTokenResponseModel(BaseModel):
+    """
+    /get_token return model
+    """
+    token: str
+    token_type: str = 'bearer'
 
-    def get_short_name(self):
-        """Return the short name for the user."""
-        return self.first_name
 
-    def email_user(self, subject, message, from_email=None, **kwargs):
-        """Send an email to this user."""
-        send_mail(subject, message, from_email, [self.email], **kwargs)
+class GetUserModel(BaseModel):
+    """
+    /get_user param
+    """
+    token: str
+
+
+class TokenData(BaseModel):
+    """
+    /get_user return model
+    """
+    username: str
